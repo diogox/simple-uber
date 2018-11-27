@@ -1,16 +1,12 @@
-package Views;
+package Client.Views;
 
 import com.googlecode.lanterna.TerminalSize;
-import com.googlecode.lanterna.TextColor;
-import com.googlecode.lanterna.graphics.SimpleTheme;
 import com.googlecode.lanterna.gui2.*;
 import com.googlecode.lanterna.screen.Screen;
 
-import java.util.Arrays;
+public class Signup {
 
-public class Login {
-
-    public static void show(Screen screen, Window window) {
+    public static void show(final Screen screen, final Window window) {
         screen.clear();
 
         // Create panel to hold components
@@ -24,7 +20,14 @@ public class Login {
         panel.addComponent(new TextBox());
 
         panel.addComponent(new EmptySpace(new TerminalSize(0,0))); // Empty space underneath labels
-        panel.addComponent(new Button("Login"));
+        Button signupButton = new Button("Signup");
+        panel.addComponent(signupButton);
+
+        signupButton.addListener(new Button.Listener() {
+            public void onTriggered(Button button) {
+                DriverMenu.show(screen, window);
+            }
+        });
 
         // Add panel to window
         window.setComponent(panel);

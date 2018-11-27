@@ -1,4 +1,4 @@
-package Models;
+package Client.Models;
 
 public class Driver {
 }

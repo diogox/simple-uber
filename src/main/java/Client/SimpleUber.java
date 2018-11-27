@@ -1,7 +1,6 @@
-import Views.InitialScreen;
-import Views.Signup;
-import com.googlecode.lanterna.TerminalPosition;
-import com.googlecode.lanterna.TerminalSize;
+package Client;
+
+import Client.Views.InitialScreen;
 import com.googlecode.lanterna.TextColor;
 import com.googlecode.lanterna.graphics.SimpleTheme;
 import com.googlecode.lanterna.gui2.*;
@@ -12,7 +11,6 @@ import com.googlecode.lanterna.terminal.Terminal;
 
 import java.io.IOException;
 import java.util.Arrays;
-import java.util.Collection;
 
 public class SimpleUber {
 

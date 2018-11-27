@@ -1,14 +1,10 @@
-package Views;
+package Client.Views;
 
 import com.googlecode.lanterna.TerminalSize;
-import com.googlecode.lanterna.TextColor;
-import com.googlecode.lanterna.graphics.SimpleTheme;
 import com.googlecode.lanterna.gui2.*;
 import com.googlecode.lanterna.screen.Screen;
 
-import java.util.Arrays;
-
-public class Signup {
+public class Login {
 
     public static void show(final Screen screen, final Window window) {
         screen.clear();
@@ -24,13 +20,14 @@ public class Signup {
         panel.addComponent(new TextBox());
 
         panel.addComponent(new EmptySpace(new TerminalSize(0,0))); // Empty space underneath labels
-        Button signup = new Button("Signup");
-        signup.addListener(new Button.Listener() {
+        Button loginButton = new Button("Login");
+        panel.addComponent(loginButton);
+
+        loginButton.addListener(new Button.Listener() {
             public void onTriggered(Button button) {
-                Login.show(screen, window);
+                ClientMenu.show(screen, window);
             }
         });
-        panel.addComponent(signup);
 
         // Add panel to window
         window.setComponent(panel);
