@@ -1,31 +1,62 @@
 package Client.Views;
 
+import Client.Api.ApiActions;
+import Client.SimpleUber;
+import Client.Utils.ThreadChannel;
+import Client.Views.Client.ClientMenu;
 import com.googlecode.lanterna.TerminalSize;
 import com.googlecode.lanterna.gui2.*;
+import com.googlecode.lanterna.gui2.dialogs.MessageDialogBuilder;
 import com.googlecode.lanterna.screen.Screen;
 
 public class Login {
 
-    public static void show(final Screen screen, final Window window) {
-        screen.clear();
+    public static void show(final ThreadChannel channel) {
+        Screen screen = SimpleUber.getInstance().mScreen;
+        Window window = SimpleUber.getInstance().mWindow;
 
+        screen.clear();
         // Create panel to hold components
         Panel panel = new Panel();
         panel.setLayoutManager(new GridLayout(2));
 
+        final TextBox usernameInput = new TextBox();
         panel.addComponent(new Label("Username"));
-        panel.addComponent(new TextBox());
+        panel.addComponent(usernameInput);
 
+        final TextBox passwordInput = new TextBox();
         panel.addComponent(new Label("Password"));
-        panel.addComponent(new TextBox());
+        panel.addComponent(passwordInput);
 
-        panel.addComponent(new EmptySpace(new TerminalSize(0,0))); // Empty space underneath labels
+        panel.addComponent(new EmptySpace(new TerminalSize(1,1)));
+        panel.addComponent(new EmptySpace(new TerminalSize(1,1)));
+
         Button loginButton = new Button("Login");
         panel.addComponent(loginButton);
+        Button backButton = new Button("Main Menu");
+        panel.addComponent(backButton);
 
         loginButton.addListener(new Button.Listener() {
             public void onTriggered(Button button) {
-                ClientMenu.show(screen, window);
+                String username = usernameInput.getText();
+                String password = passwordInput.getText();
+                boolean isLoggedIn = ApiActions.login(channel, username, password);
+
+                if (!isLoggedIn) {
+                    ClientMenu.show(channel);
+                } else {
+                    new MessageDialogBuilder()
+                            .setTitle("Error")
+                            .setText("Incorrect Username or Password")
+                            .build()
+                            .showDialog(SimpleUber.getInstance().mDialogWindow);
+                    Login.show(channel);
+                }
+            }
+        });
+        backButton.addListener(new Button.Listener() {
+            public void onTriggered(Button button) {
+                InitialScreen.show(channel);
             }
         });
 

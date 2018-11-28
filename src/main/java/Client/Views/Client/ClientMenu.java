@@ -1,12 +1,16 @@
-package Client.Views;
+package Client.Views.Client;
 
 import Client.SimpleUber;
 import Client.Utils.ThreadChannel;
+import Client.Views.InitialScreen;
 import com.googlecode.lanterna.TerminalSize;
-import com.googlecode.lanterna.gui2.*;
+import com.googlecode.lanterna.gui2.ActionListBox;
+import com.googlecode.lanterna.gui2.GridLayout;
+import com.googlecode.lanterna.gui2.Panel;
+import com.googlecode.lanterna.gui2.Window;
 import com.googlecode.lanterna.screen.Screen;
 
-public class InitialScreen {
+public class ClientMenu {
 
     public static void show(final ThreadChannel channel) {
         Screen screen = SimpleUber.getInstance().mScreen;
@@ -19,14 +23,14 @@ public class InitialScreen {
 
         TerminalSize size = new TerminalSize(14, 2);
         ActionListBox actionListBox = new ActionListBox(size);
-        actionListBox.addItem("Login", new Runnable() {
+        actionListBox.addItem("Call Uber", new Runnable() {
             public void run() {
-                Login.show(channel);
+                CallUberScreen.show(channel);
             }
         });
-        actionListBox.addItem("Signup", new Runnable() {
+        actionListBox.addItem("Sign Out", new Runnable() {
             public void run() {
-                Signup.show(channel);
+                InitialScreen.show(channel);
             }
         });
 
