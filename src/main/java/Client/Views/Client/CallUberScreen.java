@@ -1,10 +1,9 @@
 package Client.Views.Client;
 
 import Client.Api.ApiActions;
-import Client.Api.UberApi;
 import Client.SimpleUber;
 import Client.Utils.ThreadChannel;
-import Client.Views.Login;
+import Shared.Models.User;
 import com.googlecode.lanterna.TerminalSize;
 import com.googlecode.lanterna.gui2.*;
 import com.googlecode.lanterna.gui2.dialogs.MessageDialogBuilder;
@@ -13,7 +12,7 @@ import com.googlecode.lanterna.screen.Screen;
 
 public class CallUberScreen {
 
-    public static void show(final ThreadChannel channel) {
+    public static void show(final ThreadChannel channel, final User user) {
         Screen screen = SimpleUber.getInstance().mScreen;
         Window window = SimpleUber.getInstance().mWindow;
         screen.clear();
@@ -39,37 +38,38 @@ public class CallUberScreen {
             public void run() {
                 SimpleUber simpleUber = SimpleUber.getInstance();
 
+                /*
                 WaitingDialog waiting = WaitingDialog.createDialog("Finding Uber...",
                         "Please wait while we find you a driver.");
                 waiting.showDialog(simpleUber.mDialogWindow,
-                        true);
-
-                boolean isUberCalled = ApiActions.callUber(channel,
+                        false);
+                */
+                System.out.println("Making Uber call!");
+                String driverUsername = ApiActions.callUber(channel,
+                        user.getUsername(),
                         start.getText(),
                         destination.getText());
+                System.out.println("Received answer for Uber call!");
 
-                if (isUberCalled) {
+                if (driverUsername != null) {
 
-                    waiting.close();
-                    String driverUsername = "Rajesh";
+                    //waiting.close();
                     UberInTransitScreen.show(channel, driverUsername);
-                    ApiActions.waitForEndTrip(channel);
-                    StarRatingScreen.show(channel, driverUsername);
                 } else {
+                    //waiting.close();
                     new MessageDialogBuilder()
                             .setTitle("Error")
                             .setText("An error occured communicating with the server. Please try again!")
                             .build()
                             .showDialog(SimpleUber.getInstance().mDialogWindow);
-                    ClientMenu.show(channel);
+                    ClientMenu.show(channel, user);
                 }
             }
         }).addTo(panel);
 
         new Button("Cancel", new Runnable() {
             public void run() {
-                ClientMenu.show(channel);
-                return;
+                ClientMenu.show(channel, user);
             }
         }).addTo(panel);
 

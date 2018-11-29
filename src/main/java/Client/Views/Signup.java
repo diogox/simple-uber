@@ -5,6 +5,7 @@ import Client.SimpleUber;
 import Client.Utils.ThreadChannel;
 import Client.Views.Client.ClientMenu;
 import Client.Views.Driver.DriverMenu;
+import Shared.Models.User;
 import com.googlecode.lanterna.TerminalSize;
 import com.googlecode.lanterna.gui2.*;
 import com.googlecode.lanterna.gui2.dialogs.MessageDialogBuilder;
@@ -60,12 +61,13 @@ public class Signup {
                     return;
                 }
                 boolean isSignedUp = ApiActions.signup(channel, username, password, userType);
+                User user = new User(username, password, userType);
 
                 if (isSignedUp) {
                     if (userType.equals("Client")) {
-                        ClientMenu.show(channel);
+                        ClientMenu.show(channel, user);
                     } else {
-                        DriverMenu.show(channel);
+                        DriverMenu.show(channel, user);
                     }
                 } else {
                     new MessageDialogBuilder()

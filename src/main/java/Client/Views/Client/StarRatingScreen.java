@@ -24,29 +24,34 @@ public class StarRatingScreen {
         actionListBox.addItem("1 Star", new Runnable() {
             public void run() {
                 ApiActions.rateDriver(channel, driverUsername, "1");
+                ClientMenu.show(channel, ClientMenu.mUser);
             }
         });
         actionListBox.addItem("2 Star", new Runnable() {
             public void run() {
                 ApiActions.rateDriver(channel, driverUsername, "2");
+                ClientMenu.show(channel, ClientMenu.mUser);
             }
         });
         actionListBox.addItem("3 Star", new Runnable() {
             public void run() {
                 ApiActions.rateDriver(channel, driverUsername, "3");
+                ClientMenu.show(channel, ClientMenu.mUser);
             }
         });
         actionListBox.addItem("4 Star", new Runnable() {
             public void run() {
                 ApiActions.rateDriver(channel, driverUsername, "4");
+                ClientMenu.show(channel, ClientMenu.mUser);
             }
         });
         actionListBox.addItem("5 Star", new Runnable() {
             public void run() {
                 ApiActions.rateDriver(channel, driverUsername, "5");
+                ClientMenu.show(channel, ClientMenu.mUser);
             }
         });
-
+        panel.addComponent(actionListBox);
 
         // Add panel to window
         window.setComponent(panel);

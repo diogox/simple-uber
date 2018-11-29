@@ -11,7 +11,10 @@ import com.googlecode.lanterna.screen.Screen;
 import com.googlecode.lanterna.screen.TerminalScreen;
 import com.googlecode.lanterna.terminal.DefaultTerminalFactory;
 import com.googlecode.lanterna.terminal.Terminal;
+import com.googlecode.lanterna.terminal.swing.SwingTerminalFrame;
 
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -24,6 +27,7 @@ public class SimpleUber {
     public final WindowBasedTextGUI mDialogWindow;
     public final MultiWindowTextGUI mGui;
     public final BasicWindow mWindow;
+    public final SwingTerminalFrame mTerminal;
     public final SimpleTheme mTheme;
 
     private SimpleUber(ThreadChannel channel) throws IOException {
@@ -31,8 +35,10 @@ public class SimpleUber {
         new Thread(api).start();
 
         // Setup terminal and screen layers
-        Terminal terminal = new DefaultTerminalFactory().createTerminal();
-        mScreen = new TerminalScreen(terminal);
+        mTerminal = (SwingTerminalFrame) new DefaultTerminalFactory().createTerminal();
+        mTerminal.setTitle("Simple Uber");
+
+        mScreen = new TerminalScreen(mTerminal);
         mScreen.startScreen();
 
         // Create window to hold the panel
@@ -56,7 +62,7 @@ public class SimpleUber {
     }
 
     public static void main(String[] args) throws IOException {
-        ThreadChannel channel = new ThreadChannel();
+        final ThreadChannel channel = new ThreadChannel();
         mInstance = new SimpleUber(channel);
 
         InitialScreen.show(channel);
@@ -64,8 +70,17 @@ public class SimpleUber {
         mInstance.mWindow.setTheme(mInstance.mTheme);
         mInstance.mDialogWindow.setTheme(mInstance.mTheme);
 
+        mInstance.mTerminal.addWindowListener(new WindowAdapter()
+        {
+            @Override
+            public void windowClosing(WindowEvent e)
+            {
+                channel.sendToOtherThread(ACTION_QUIT, new ArrayList<String>());
+                e.getWindow().dispose();
+            }
+        });
+
         mInstance.mGui.addWindowAndWait(mInstance.mWindow);
-        channel.sendToOtherThread(ACTION_QUIT, new ArrayList<String>());
     }
 
     public static SimpleUber getInstance() {

@@ -4,6 +4,8 @@ import Client.Api.ApiActions;
 import Client.SimpleUber;
 import Client.Utils.ThreadChannel;
 import Client.Views.Client.ClientMenu;
+import Client.Views.Driver.DriverMenu;
+import Shared.Models.User;
 import com.googlecode.lanterna.TerminalSize;
 import com.googlecode.lanterna.gui2.*;
 import com.googlecode.lanterna.gui2.dialogs.MessageDialogBuilder;
@@ -40,10 +42,16 @@ public class Login {
             public void onTriggered(Button button) {
                 String username = usernameInput.getText();
                 String password = passwordInput.getText();
-                boolean isLoggedIn = ApiActions.login(channel, username, password);
+                User user = ApiActions.login(channel, username, password);
 
-                if (!isLoggedIn) {
-                    ClientMenu.show(channel);
+                if (user != null) {
+                    if (user.getUserType().equals("Client")) {
+                        ClientMenu.show(channel, user);
+
+                    } else if (user.getUserType().equals("Driver")) {
+                        DriverMenu.show(channel, user);
+
+                    }
                 } else {
                     new MessageDialogBuilder()
                             .setTitle("Error")

@@ -3,6 +3,7 @@ package Client.Views.Client;
 import Client.SimpleUber;
 import Client.Utils.ThreadChannel;
 import Client.Views.InitialScreen;
+import Shared.Models.User;
 import com.googlecode.lanterna.TerminalSize;
 import com.googlecode.lanterna.gui2.ActionListBox;
 import com.googlecode.lanterna.gui2.GridLayout;
@@ -11,8 +12,10 @@ import com.googlecode.lanterna.gui2.Window;
 import com.googlecode.lanterna.screen.Screen;
 
 public class ClientMenu {
+    public static User mUser;
 
-    public static void show(final ThreadChannel channel) {
+    public static void show(final ThreadChannel channel, final User user) {
+        mUser = user;
         Screen screen = SimpleUber.getInstance().mScreen;
         Window window = SimpleUber.getInstance().mWindow;
         screen.clear();
@@ -25,7 +28,7 @@ public class ClientMenu {
         ActionListBox actionListBox = new ActionListBox(size);
         actionListBox.addItem("Call Uber", new Runnable() {
             public void run() {
-                CallUberScreen.show(channel);
+                CallUberScreen.show(channel, user);
             }
         });
         actionListBox.addItem("Sign Out", new Runnable() {

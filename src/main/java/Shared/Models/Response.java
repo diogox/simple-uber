@@ -7,8 +7,8 @@ public class Response {
 
     public Response(String status, String argument, String errorMessage) {
         this.status = status;
-        this.argument = status;
-        this.errorMessage= status;
+        this.argument = argument;
+        this.errorMessage= errorMessage;
     }
 
     public Response(String status, String argument) {

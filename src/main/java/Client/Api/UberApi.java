@@ -1,10 +1,7 @@
 package Client.Api;
 
 import Client.Utils.ThreadChannel;
-import Shared.Models.Credentials;
-import Shared.Models.Request;
-import Shared.Models.Response;
-import Shared.Models.User;
+import Shared.Models.*;
 import com.google.gson.Gson;
 
 import java.io.BufferedReader;
@@ -50,18 +47,18 @@ public class UberApi implements Runnable {
                 ThreadChannel.Data data = mChannel.receiveOnOtherThread();
                 action = data.getAction();
                 List<String> args = data.getArgs();
-
                 if (action.equals(ACTION_LOGIN)) {
                     User user = onLogin(args);
 
                     // Tell the main branch if it was successful
                     List<String> loginArgs = new ArrayList<String>();
                     if(user != null) {
-                        loginArgs.add(user.getUserType())
+                        loginArgs.add(user.getUserType());
                         mChannel.sendToMainThread(SUCCESS, loginArgs);
                     } else {
                         mChannel.sendToMainThread(FAILURE, loginArgs);
                     }
+
                 } else if (action.equals(ACTION_SIGNUP)) {
                     boolean isSignedUp = onSignup(args);
 
@@ -72,11 +69,45 @@ public class UberApi implements Runnable {
                     } else {
                         mChannel.sendToMainThread(FAILURE, signupArgs);
                     }
+
                 } else if (action.equals(ACTION_CALL_UBER)) {
-                    // TODO: Make login request to the server
+                    Ride ride = onUberCall(args);
 
                     List<String> callUberArgs = new ArrayList<String>();
-                    mChannel.sendToMainThread(SUCCESS, callUberArgs);
+                    if(ride != null) {
+                        callUberArgs.add(ride.getDriverUsername());
+                        mChannel.sendToMainThread(SUCCESS, callUberArgs);
+                    } else {
+                        mChannel.sendToMainThread(FAILURE, callUberArgs);
+                        System.out.println("Failed to assign driver. Something went horribly wrong!");
+                        System.exit(-1);
+                    }
+
+                } else if (action.equals(ACTION_ACCEPT_RIDE)) {
+                    boolean rideWasAvailable = onAcceptRide(args);
+
+                    if(rideWasAvailable) {
+                        mChannel.sendToMainThread(SUCCESS, null);
+                    } else {
+                        mChannel.sendToMainThread(FAILURE, null);
+                    }
+
+                } else if (action.equals(ACTION_SIGNAL_CLIENT_END_TRIP)) {
+                    // Wait for server to signal end of ride
+                    mReceiver.readLine();
+                    mChannel.sendToMainThread(SUCCESS, null);
+
+                } else if (action.equals(ACTION_SIGNAL_SERVER_END_TRIP)) {
+                    onSignalEndTrip(args);
+                    mChannel.sendToMainThread(SUCCESS, null);
+
+                } else if (action.equals(ACTION_END_RIDE)) {
+                    List<String> emptyArgs = new ArrayList<String>();
+                    mChannel.sendToMainThread(SUCCESS, emptyArgs);
+
+                } else if (action.equals(ACTION_RATE_UBER)) {
+                    onRateUber(args);
+                    mChannel.sendToMainThread(SUCCESS, null);
                 } else if (action.equals(ACTION_QUIT)) {
                     System.out.println("Quitting!");
                     mServer.close();
@@ -86,6 +117,7 @@ public class UberApi implements Runnable {
             System.out.println("Couldn't connect to server on port " + SERVER_PORT + "!");
             System.exit(-1);
         } catch (Exception e) {
+            e.printStackTrace();
             System.out.println("Api thread failed to determine required action!");
             System.exit(-1);
         }
@@ -114,7 +146,7 @@ public class UberApi implements Runnable {
         Response serverResponse = gson.fromJson(res, Response.class);
 
         if (serverResponse.getStatus().equals(SUCCESS)) {
-            User user =  gson.fromJson(serverResponse.getArgument(), User.class);
+            User user = gson.fromJson(serverResponse.getArgument(), User.class);
             return user;
         }
 
@@ -134,7 +166,7 @@ public class UberApi implements Runnable {
         String newUserJson = gson.toJson(newUser);
 
         // Serialize request
-        Request req = new Request(ACTION_LOGIN, newUserJson);
+        Request req = new Request(ACTION_SIGNUP, newUserJson);
         String reqJson = gson.toJson(req);
 
         // Send request
@@ -145,5 +177,93 @@ public class UberApi implements Runnable {
         Response serverResponse = gson.fromJson(res, Response.class);
 
         return serverResponse.getStatus().equals(SUCCESS);
+    }
+
+    /**
+     * Tells the server to find an Uber driver.
+     * @param args
+     * @return driver The driver assigned to the trip.
+     */
+    private Ride onUberCall(List<String> args) throws IOException {
+        String clientUsername = args.get(0);
+        String start = args.get(1);
+        String destination = args.get(2);
+
+        Gson gson = new Gson();
+        // Serialize user
+        Ride newRide = new Ride(start, destination);
+        newRide.setClientUsername(clientUsername);
+        String newRideJson = gson.toJson(newRide);
+
+        // Serialize request
+        Request req = new Request(ACTION_CALL_UBER, newRideJson);
+        String reqJson = gson.toJson(req);
+
+        // Send request
+        mSender.println(reqJson);
+
+        // Get Server response
+        String res = mReceiver.readLine();
+        Response serverResponse = gson.fromJson(res, Response.class);
+
+        if (serverResponse.getStatus().equals(SUCCESS)) {
+            Ride ride =  gson.fromJson(serverResponse.getArgument(), Ride.class);
+            return ride;
+        }
+
+        return null;
+    }
+
+    private boolean onAcceptRide(List<String> args) throws IOException {
+        String updatedRideJson = args.get(0);
+        Gson gson = new Gson();
+
+        // Serialize request
+        Request req = new Request(ACTION_ACCEPT_RIDE, updatedRideJson);
+        String reqJson = gson.toJson(req);
+
+        // Send request
+        mSender.println(reqJson);
+
+        // Get Server response
+        String res = mReceiver.readLine();
+        Response serverResponse = gson.fromJson(res, Response.class);
+
+        if (serverResponse.getStatus().equals(SUCCESS)) {
+
+            return true;
+        }
+
+        return false;
+    }
+
+    private void onSignalEndTrip(List<String> args) throws IOException {
+        Gson gson = new Gson();
+        String rideJson = args.get(0);
+
+        // Serialize request
+        Request req = new Request(ACTION_SIGNAL_SERVER_END_TRIP, rideJson);
+        String reqJson = gson.toJson(req);
+
+        // Send request
+        mSender.println(reqJson);
+
+        // Get Server response
+        mReceiver.readLine();
+    }
+
+    private void onRateUber(List<String> args) throws IOException {
+        Gson gson = new Gson();
+        String rideJson = args.get(0);
+
+        // Serialize request
+        Request req = new Request(ACTION_RATE_UBER, rideJson);
+        String reqJson = gson.toJson(req);
+
+        // Send request
+        mSender.println(reqJson);
+
+        // Get Server response
+        mReceiver.readLine();
     }
 }
