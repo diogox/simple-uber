@@ -48,12 +48,12 @@ public class UberApi implements Runnable {
                 action = data.getAction();
                 List<String> args = data.getArgs();
                 if (action.equals(ACTION_LOGIN)) {
-                    User user = onLogin(args);
+                    String userJson = onLogin(args);
 
                     // Tell the main branch if it was successful
                     List<String> loginArgs = new ArrayList<String>();
-                    if(user != null) {
-                        loginArgs.add(user.getUserType());
+                    if(userJson != null) {
+                        loginArgs.add(userJson);
                         mChannel.sendToMainThread(SUCCESS, loginArgs);
                     } else {
                         mChannel.sendToMainThread(FAILURE, loginArgs);
@@ -108,6 +108,7 @@ public class UberApi implements Runnable {
                 } else if (action.equals(ACTION_RATE_UBER)) {
                     onRateUber(args);
                     mChannel.sendToMainThread(SUCCESS, null);
+
                 } else if (action.equals(ACTION_QUIT)) {
                     System.out.println("Quitting!");
                     mServer.close();
@@ -123,7 +124,7 @@ public class UberApi implements Runnable {
         }
     }
 
-    private User onLogin(List<String> args) throws IOException {
+    private String onLogin(List<String> args) throws IOException {
 
         // Get arguments
         String username = args.get(0);
@@ -146,8 +147,7 @@ public class UberApi implements Runnable {
         Response serverResponse = gson.fromJson(res, Response.class);
 
         if (serverResponse.getStatus().equals(SUCCESS)) {
-            User user = gson.fromJson(serverResponse.getArgument(), User.class);
-            return user;
+            return serverResponse.getArgument(); //userJson
         }
 
         return null;

@@ -30,8 +30,9 @@ public class ApiActions {
         System.out.println(responseAction);
 
         if (responseAction.equals(SUCCESS)) {
-            String userType = data.getArgs().get(0);
-            return new User(username, password, userType);
+            String userJson = data.getArgs().get(0);
+            User user = new Gson().fromJson(userJson, User.class);
+            return user;
         } else if (responseAction.equals(FAILURE)) {
             return null;
         } else {

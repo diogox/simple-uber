@@ -3,6 +3,7 @@ package Client.Views.Client;
 import Client.Api.ApiActions;
 import Client.SimpleUber;
 import Client.Utils.ThreadChannel;
+import Shared.Models.Ride;
 import Shared.Models.User;
 import com.googlecode.lanterna.TerminalSize;
 import com.googlecode.lanterna.gui2.*;
@@ -36,27 +37,18 @@ public class CallUberScreen {
 
         new Button("Confirm", new Runnable() {
             public void run() {
-                SimpleUber simpleUber = SimpleUber.getInstance();
 
-                /*
-                WaitingDialog waiting = WaitingDialog.createDialog("Finding Uber...",
-                        "Please wait while we find you a driver.");
-                waiting.showDialog(simpleUber.mDialogWindow,
-                        false);
-                */
-                System.out.println("Making Uber call!");
                 String driverUsername = ApiActions.callUber(channel,
                         user.getUsername(),
                         start.getText(),
                         destination.getText());
-                System.out.println("Received answer for Uber call!");
 
                 if (driverUsername != null) {
-
-                    //waiting.close();
-                    UberInTransitScreen.show(channel, driverUsername);
+                    Ride ride = new Ride(start.getText(), destination.getText());
+                    ride.setClientUsername(user.getUsername());
+                    ride.setDriverUsername(driverUsername);
+                    UberInTransitScreen.show(channel, ride);
                 } else {
-                    //waiting.close();
                     new MessageDialogBuilder()
                             .setTitle("Error")
                             .setText("An error occured communicating with the server. Please try again!")

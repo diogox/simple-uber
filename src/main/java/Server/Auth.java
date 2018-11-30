@@ -1,6 +1,5 @@
 package Server;
 
-import Shared.Models.Credentials;
 import Shared.Models.Ride;
 import Shared.Models.User;
 import com.google.gson.Gson;
@@ -24,17 +23,13 @@ public class Auth {
 
     public synchronized User login(String username, String password) {
 
-        if (users.isEmpty())
-            return null;
-
-        User userFound = null;
-        for (int i = 0; i < users.size(); i++)  {
-            if (users.get(i).getUsername().equals(username) && users.get(i).getPassword().equals(password)) {
-                userFound = new User(users.get(i).getUsername(), users.get(i).getPassword(), users.get(i).getUserType());
+        for (User user : users) {
+            if (user.getUsername().equals(username) && user.getPassword().equals(password)) {
+                return user;
             }
         }
 
-        return userFound;
+        return null;
     }
 
     public synchronized boolean signup(String username, String password, String typeUser) {
@@ -90,6 +85,16 @@ public class Auth {
             e.printStackTrace();
         }
 
+    }
+
+    public List<Ride> getUserHistory(String username) {
+        for (User user : users) {
+            if (user.getUsername().equals(username)) {
+                return user.getHistory();
+            }
+        }
+
+        return null;
     }
 
     private ArrayList<User> loadUsers() {

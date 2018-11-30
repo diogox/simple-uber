@@ -3,17 +3,23 @@ package Client.Views.Driver;
 import Client.SimpleUber;
 import Client.Utils.RideScanner;
 import Client.Utils.ThreadChannel;
+import Client.Views.Client.ClientHistory;
 import Client.Views.InitialScreen;
+import Shared.Models.Ride;
 import Shared.Models.User;
 import com.googlecode.lanterna.TerminalSize;
 import com.googlecode.lanterna.gui2.*;
 import com.googlecode.lanterna.screen.Screen;
 
+import java.util.List;
+
 public class DriverMenu {
     public static boolean isAvailable = false;
     public static RideScanner mRideScanner;
+    public static User mUser;
 
     public static void show(final ThreadChannel channel, final User user) {
+        mUser = user;
         final Screen screen = SimpleUber.getInstance().mScreen;
         final Window window = SimpleUber.getInstance().mWindow;
         screen.clear();
@@ -62,7 +68,12 @@ public class DriverMenu {
                 }
             });
         }
-
+        actionListBox.addItem("See History", new Runnable() {
+            public void run() {
+                List<Ride> rides = user.getHistory();
+                ClientHistory.show(channel, rides);
+            }
+        });
         actionListBox.addItem("Sign Out", new Runnable() {
             public void run() {
                 rideScannerRunnable.stop();

@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintWriter;
 import java.net.Socket;
+import java.util.List;
 
 import static Shared.Models.Actions.*;
 import static Shared.Models.Actions.ACTION_RATE_UBER;

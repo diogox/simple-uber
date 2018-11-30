@@ -34,6 +34,8 @@ public class DuringRideScreen {
                 String rideJson = gson.toJson(ride);
 
                 ApiActions.signalEndOfTrip(channel, rideJson);
+                ride.setRating("Pending..");
+                DriverMenu.mUser.addRide(ride);
                 DriverMenu.show(channel, user);
             }
         }).addTo(panel);
