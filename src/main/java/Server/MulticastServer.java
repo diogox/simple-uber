@@ -33,7 +33,8 @@ public class MulticastServer {
     }
 
     private void startServer() {
-        int port = 4445;
+        // Port 0 means that the socket will find any port that is available
+        int port = 0;
         try {
             mSocket = new DatagramSocket(port);
         } catch (SocketException e) {
