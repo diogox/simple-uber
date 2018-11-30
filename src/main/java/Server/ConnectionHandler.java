@@ -106,11 +106,13 @@ public class ConnectionHandler implements Runnable {
 
                     // Deserialize ride
                     Ride updatedRide = gson.fromJson(reqArgs, Ride.class);
+                    System.out.println("updatedRide timestamp: " + updatedRide.getTimestamp());
 
                     RideSystem rideSystem = RideSystem.getInstance();
 
                     // Make sure some other driver didn't already accept it
-                    Ride rideInSystem = rideSystem.getRideByClient(updatedRide.getClientUsername());
+                    Ride rideInSystem = rideSystem.getRideByClient(updatedRide.getClientUsername(),
+                            updatedRide.getTimestamp());
 
                     // Meanwhile, the client's handle finds and removes the ride. So it should be no longer there if someone else took it
                     if (rideInSystem != null) {
@@ -135,7 +137,7 @@ public class ConnectionHandler implements Runnable {
                     Ride ride = gson.fromJson(reqArgs, Ride.class);
 
                     RideSystem rideSystem = RideSystem.getInstance();
-                    rideSystem.getRideByClient(ride.getClientUsername()).setComplete(true);
+                    rideSystem.getRideByClient(ride.getClientUsername(), ride.getTimestamp()).setComplete(true);
                     Response res = new Response(SUCCESS, "");
                     String resJson = gson.toJson(res);
                     mSender.println(resJson);
@@ -157,7 +159,6 @@ public class ConnectionHandler implements Runnable {
                     ride.setRating(incompleteInfoRide.getRating());
 
                     // Add trip to history and remove from active
-                    rideSystem.removeRide(ride);
                     UberServer.mAuth.saveUserRide(ride.getDriverUsername(), ride);
                     UberServer.mAuth.saveUserRide(ride.getClientUsername(), ride);
 
@@ -203,7 +204,7 @@ public class ConnectionHandler implements Runnable {
         do {
 
             // Try to get updated ride
-            updatedRide = rideSystem.getRideByClient(clientUsername);
+            updatedRide = rideSystem.getRideByClient(clientUsername, ride.getTimestamp());
             if (updatedRide != null) {
                 // When the ride is given a driver, inform the client
                 if (!isClientInformed) {

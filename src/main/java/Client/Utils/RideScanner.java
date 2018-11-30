@@ -15,6 +15,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 public class RideScanner implements Runnable {
     private Thread worker;
     private final AtomicBoolean mRunning = new AtomicBoolean(false);
+    private final AtomicBoolean mReceiving = new AtomicBoolean(false);
     private final User mUser;
     private final ThreadChannel mChannel;
     private MulticastSocket mSocket;
@@ -40,7 +41,18 @@ public class RideScanner implements Runnable {
 
     public void start() {
         worker = new Thread(this);
+        mReceiving.set(true);
         worker.start();
+    }
+
+    public void pause() {
+        mReceiving.set(false);
+        AvailableRideList availableRides = AvailableRideList.getInstance();
+        availableRides.clear();
+    }
+
+    public void resume() {
+        mReceiving.set(true);
     }
 
     public void stop() {
@@ -62,19 +74,6 @@ public class RideScanner implements Runnable {
 
         while (mRunning.get()) {
             listen(packet);
-            /*
-            try {
-                Ride ride = new Ride("X", "S");
-                Ride ride2 = new Ride("X", "S");
-                availableRides.addRide(ride);
-                availableRides.addRide(ride2);
-                Ride newRide = availableRides.getNext();
-                RideAcceptanceScreen.show(mChannel, mUser, newRide);
-                Thread.sleep(5000);
-            } catch (InterruptedException e) {
-                Thread.currentThread().interrupt();
-            }
-            */
         }
         System.out.println("Thread Stopped!");
     }
@@ -84,16 +83,20 @@ public class RideScanner implements Runnable {
 
             // Receive Message
             mSocket.receive(packet);
-            String received = new String(packet.getData(), 0, packet.getLength());
-            System.out.println(received);
-            // Deserialize to Ride
-            Ride ride = mGson.fromJson(received, Ride.class);
 
-            // Add to Ride list
-            mAvailableRides.addRide(ride);
+            // We need to check again if the driver is 'Available'
+            if (mReceiving.get()) {
+                String received = new String(packet.getData(), 0, packet.getLength());
+                System.out.println(received);
+                // Deserialize to Ride
+                Ride ride = mGson.fromJson(received, Ride.class);
 
-            // Show ride on screen
-            RideAcceptanceScreen.show(mChannel, mUser);
+                // Add to Ride list
+                mAvailableRides.addRide(ride);
+
+                // Show ride on screen
+                RideAcceptanceScreen.show(mChannel, mUser);
+            }
         } catch (IOException e) {
             System.out.println("Failed to receive message as a Driver through Multicast!");
         }

@@ -1,6 +1,7 @@
 package Shared.Models;
 
 public class Ride {
+    private long timestamp;
     private String clientUsername;
     private String driverUsername;
     private String startLocation;
@@ -9,8 +10,17 @@ public class Ride {
     private boolean isComplete = false;
 
     public Ride(String startLocation, String endLocation) {
+        this.timestamp = System.currentTimeMillis();
         this.startLocation = startLocation;
         this.endLocation = endLocation;
+    }
+
+    public long getTimestamp() {
+        return timestamp;
+    }
+
+    public void setTimestamp(long timestamp) {
+        this.timestamp = timestamp;
     }
 
     public String getClientUsername() {

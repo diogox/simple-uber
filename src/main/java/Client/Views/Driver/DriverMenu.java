@@ -14,7 +14,7 @@ import com.googlecode.lanterna.screen.Screen;
 import java.util.List;
 
 public class DriverMenu {
-    public static boolean isAvailable = false;
+    public static boolean isAvailable = true;
     public static RideScanner mRideScanner;
     public static User mUser;
 
@@ -24,24 +24,14 @@ public class DriverMenu {
         final Window window = SimpleUber.getInstance().mWindow;
         screen.clear();
 
-        if (mRideScanner == null || !mRideScanner.isRunning()) {
+        if (mRideScanner == null || !mRideScanner.isRunning() && isAvailable) {
             mRideScanner = new RideScanner(user, channel);
             mRideScanner.start();
+            System.out.println("Started Ride Scanner!");
         }
 
         // Create panel to hold components
         final Panel panel = new Panel();
-
-        renderView(screen, panel, window, channel, user, mRideScanner);
-    }
-
-    private static void renderView(final Screen screen,
-                                   final Panel panel,
-                                   final Window window,
-                                   final ThreadChannel channel,
-                                   final User user,
-                                   final RideScanner rideScannerRunnable) {
-        screen.clear();
         panel.setLayoutManager(new GridLayout(1));
 
 
@@ -52,9 +42,13 @@ public class DriverMenu {
             new EmptySpace(new TerminalSize(1, 1)).addTo(panel);
             actionListBox.addItem("Become 'Unavailable'", new Runnable() {
                 public void run() {
+                    System.out.println("Stopped RideScanner");
+                    // Stop multicast scanner
+                    mRideScanner.pause();
+
+                    // Render 'unavailable' view
                     isAvailable = false;
-                    screen.clear();
-                    DriverMenu.renderView(screen, panel, window, channel, user, rideScannerRunnable);
+                    DriverMenu.show(channel, user);
                 }
             });
         } else {
@@ -62,9 +56,13 @@ public class DriverMenu {
             new EmptySpace(new TerminalSize(1, 1)).addTo(panel);
             actionListBox.addItem("Become 'Available'", new Runnable() {
                 public void run() {
+                    System.out.println("Started RideScanner");
+                    // Start multicast scanner
+                    mRideScanner.resume();
+
+                    // Render 'available' view
                     isAvailable = true;
-                    screen.clear();
-                    DriverMenu.renderView(screen, panel, window, channel, user, rideScannerRunnable);
+                    DriverMenu.show(channel, user);
                 }
             });
         }
@@ -76,10 +74,9 @@ public class DriverMenu {
         });
         actionListBox.addItem("Sign Out", new Runnable() {
             public void run() {
-                rideScannerRunnable.stop();
+                mRideScanner.stop();
                 mRideScanner = null;
                 InitialScreen.show(channel);
-                return;
             }
         });
 

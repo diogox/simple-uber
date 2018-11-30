@@ -29,10 +29,10 @@ public class RideSystem {
         mActiveRides.remove(ride);
     }
 
-    public synchronized Ride getRideByClient(String clientUsername) {
+    public synchronized Ride getRideByClient(String clientUsername, long rideTimestamp) {
 
         for (Ride ride : mActiveRides) {
-            if (ride.getClientUsername().equals(clientUsername)) {
+            if (ride.getClientUsername().equals(clientUsername) && ride.getTimestamp() == rideTimestamp) {
                 return ride;
             }
         }
