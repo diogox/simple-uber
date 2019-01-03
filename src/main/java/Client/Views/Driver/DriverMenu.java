@@ -69,7 +69,7 @@ public class DriverMenu {
         actionListBox.addItem("See History", new Runnable() {
             public void run() {
                 List<Ride> rides = user.getHistory();
-                ClientHistory.show(channel, rides);
+                DriverHistory.show(channel, rides);
             }
         });
         actionListBox.addItem("Sign Out", new Runnable() {

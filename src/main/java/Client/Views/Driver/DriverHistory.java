@@ -44,7 +44,7 @@ public class DriverHistory {
 
         new Button("Main Menu", new Runnable() {
             public void run() {
-                ClientMenu.show(channel, ClientMenu.mUser);
+                DriverMenu.show(channel, DriverMenu.mUser);
             }
         }).addTo(panel);
 
